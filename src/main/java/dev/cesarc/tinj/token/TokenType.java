@@ -1,4 +1,4 @@
-package dev.cesarc.tinj;
+package dev.cesarc.tinj.token;
 
 public enum TokenType {
     // Single-character tokens (open/close)

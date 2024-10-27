@@ -1,11 +1,13 @@
-package dev.cesarc.tinj;
+package dev.cesarc.tinj.token;
+
+import dev.cesarc.tinj.Main;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static dev.cesarc.tinj.TokenType.*;
+import static dev.cesarc.tinj.token.TokenType.*;
 
 public class Scanner {
     private static final Map<String, TokenType> keywords;
@@ -43,11 +45,11 @@ public class Scanner {
     /// The current line (of the source) being scanned
     private int line = 1;
 
-    Scanner(String source) {
+    public Scanner(String source) {
         this.source = source;
     }
 
-    List<Token> scanTokens() {
+    public List<Token> scanTokens() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme
             start = current;
