@@ -3,24 +3,30 @@ package dev.cesarc.tinj.lang;
 import dev.cesarc.tinj.Environment;
 import dev.cesarc.tinj.Interpreter;
 import dev.cesarc.tinj.ReturnValue;
-import dev.cesarc.tinj.syntax.Stmt;
+import dev.cesarc.tinj.syntax.nodes.Stmt;
 
 import java.util.List;
 
 public class LangFunction implements LangCallable {
+    /// The function declaration
     private final Stmt.Function declaration;
+
+    /// The environment in which the function was defined
     private final Environment closure;
 
+    /// Create a new function with the given declaration and closure
     public LangFunction(Stmt.Function declaration, Environment closure) {
         this.closure = closure;
         this.declaration = declaration;
     }
 
+    /// Get the number of parameters the function requires
     @Override
     public int arity() {
         return declaration.params.size();
     }
 
+    /// Call the function with the given arguments
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
         Environment environment = new Environment(closure);

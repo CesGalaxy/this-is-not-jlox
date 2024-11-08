@@ -1,7 +1,8 @@
-package dev.cesarc.tinj;
+package dev.cesarc.tinj.parser;
 
-import dev.cesarc.tinj.syntax.Expr;
-import dev.cesarc.tinj.syntax.Stmt;
+import dev.cesarc.tinj.Main;
+import dev.cesarc.tinj.syntax.nodes.Expr;
+import dev.cesarc.tinj.syntax.nodes.Stmt;
 import dev.cesarc.tinj.token.Token;
 import dev.cesarc.tinj.token.TokenType;
 
@@ -12,16 +13,22 @@ import java.util.List;
 import static dev.cesarc.tinj.token.TokenType.*;
 
 public class Parser {
+    /// A runtime exception to indicate a parsing error
     private static class ParseError extends RuntimeException {}
 
+    /// The list of tokens to parse
     private final List<Token> tokens;
+
+    /// A cursor pointing to the index (at the token list) of current token being parsed
     private int current = 0;
 
-    Parser(List<Token> tokens) {
+    /// Initialize the parser with a list of tokens
+    public Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    List<Stmt> parse() {
+    /// Parse the list of tokens into a list of statements
+    public List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             statements.add(declaration());
@@ -321,6 +328,8 @@ public class Parser {
         throw error(peek(), "Expect (primary) expression.");
     }
 
+    /// If the current token is any of the provided types, advance the cursor and return true. Otherwise, false.
+    /// @param types The types of tokens to match
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
             if (check(type)) {
@@ -332,39 +341,52 @@ public class Parser {
         return false;
     }
 
+    /// Expect a token of the provided type, otherwise throw an error
+    /// @param type The type of token to expect
+    /// @param message The error message to display if the token is not of the expected type
     private Token consume(TokenType type, String message) {
         if (check(type)) return advance();
 
         throw error(peek(), message);
     }
 
+    /// Check if the current token is of the provided type
+    /// @param type The type of token to check
     private boolean check(TokenType type) {
         if (isAtEnd()) return false;
         return peek().type == type;
     }
 
+    /// Move the cursor to the next token, if it's not at the end
     private Token advance() {
         if (!isAtEnd()) current++;
         return previous();
     }
 
+    /// Check if the cursor is pointing at the "End of File" token
     private boolean isAtEnd() {
         return peek().type == EOF;
     }
 
+    /// Get the current token relative to the cursor position
     private Token peek() {
         return tokens.get(current);
     }
 
+    /// Get the previous token relative to the current cursor position
     private Token previous() {
         return tokens.get(current - 1);
     }
 
+    /// Report an error while parsing the tokens
+    /// @param token The token where the error occurred
+    /// @param message The error message
     private ParseError error(Token token, String message) {
         Main.error(token, message);
         return new ParseError();
     }
 
+    /// Try to move thc cursor to the next statement if possible
     private void synchronize() {
         advance();
 

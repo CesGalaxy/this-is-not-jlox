@@ -2,8 +2,8 @@ package dev.cesarc.tinj;
 
 import dev.cesarc.tinj.lang.LangCallable;
 import dev.cesarc.tinj.lang.LangFunction;
-import dev.cesarc.tinj.syntax.Expr;
-import dev.cesarc.tinj.syntax.Stmt;
+import dev.cesarc.tinj.syntax.nodes.Expr;
+import dev.cesarc.tinj.syntax.nodes.Stmt;
 import dev.cesarc.tinj.token.Token;
 
 import java.util.ArrayList;
@@ -12,24 +12,34 @@ import java.util.List;
 import static dev.cesarc.tinj.token.TokenType.OR;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    /// The global environment for the interpreter, it's constant
     public final Environment globals = new Environment();
+
+    /// The environment currently being used
     private Environment environment = globals;
 
+    /// Create a new interpreter and define the native functions
     Interpreter() {
+        globals.define("now", System.currentTimeMillis() / 1000.0);
         globals.define("clock", new LangCallable() {
             @Override
             public int arity() { return 0; }
 
+            /// Get the current time in seconds
             @Override
             public Object call(Interpreter interpreter, List<Object> arguments) {
                 return (double) System.currentTimeMillis() / 1000.0;
             }
+
+            // Function.prototype.constants.nativeFnIdentifier = "<native fn>"
 
             @Override
             public String toString() { return "<native fn>"; }
         });
     }
 
+    /// Run a set of statements
+    /// @param statements The statements to run
     void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {

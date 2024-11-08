@@ -1,4 +1,4 @@
-package dev.cesarc.tinj.syntax;
+package dev.cesarc.tinj.syntax.nodes;
 
 import dev.cesarc.tinj.token.Token;
 
@@ -57,6 +57,7 @@ public abstract class Expr {
         public final Expr right;
     }
 
+    /// A call to a value
     public static class Call extends Expr {
         public Call(Expr callee, Token paren, List<Expr> arguments) {
             this.callee = callee;

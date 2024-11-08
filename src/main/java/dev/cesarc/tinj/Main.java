@@ -1,7 +1,7 @@
 package dev.cesarc.tinj;
 
-import dev.cesarc.tinj.syntax.Expr;
-import dev.cesarc.tinj.syntax.Stmt;
+import dev.cesarc.tinj.parser.Parser;
+import dev.cesarc.tinj.syntax.nodes.Stmt;
 import dev.cesarc.tinj.token.Scanner;
 import dev.cesarc.tinj.token.Token;
 import dev.cesarc.tinj.token.TokenType;
@@ -15,22 +15,31 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Main {
+    /// The interpreter instance
     private static final Interpreter interpreter = new Interpreter();
 
+    /// Whether there was a syntax error in the code
     static boolean hadError = false;
+    /// Whether there was a runtime error in the code
     static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
+            // Show usage message
             System.out.println("Usage: tinj [script]");
             System.exit(64);
         } else if (args.length == 1) {
+            // Run a file with the code
             runFile(args[0]);
         } else {
+            // Run the REPL
             runPrompt();
         }
     }
 
+    /// Execute the contents of the file at the provided path
+    /// @param path The path to the file to run
+    /// @throws IOException If the file could not be read
     private static void runFile(String path) throws IOException {
         // Read the file
         byte[] bytes = Files.readAllBytes(Paths.get(path));
@@ -43,6 +52,8 @@ public class Main {
         if (hadRuntimeError) System.exit(70);
     }
 
+    /// Start listening to prompts from the user and run them in the REPL
+    /// @throws IOException If there was an error reading the input
     private static void runPrompt() throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -59,29 +70,35 @@ public class Main {
         }
     }
 
+    /// Run the provided source code
+    /// @param source The source code to run
     private static void run(String source) {
         // Scan the code and get the tokens from it
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
 
+        // Parse the tokens and get the statements from them
         Parser parser = new Parser(tokens);
         List<Stmt> statements = parser.parse();
 
         // Stop if there was a syntax error.
         if (hadError) return;
 
+        // Run the code in the current session interpreter
         interpreter.interpret(statements);
     }
 
+    /// Report an error in the source code
+    /// @param line The line where the error occurred
+    /// @param message The error message
     public static void error(int line, String message) {
         report(line, "", message);
     }
 
-    private static void report(int line, String where, String message) {
-        System.err.println("[line " + line + "] Error" + where + ": " + message);
-    }
-
-    static void error(Token token, String message) {
+    /// Report an error in the scanned tokens
+    /// @param token The token where the error occurred
+    /// @param message The error message
+    public static void error(Token token, String message) {
         if (token.type == TokenType.EOF) {
             report(token.line, " at end", message);
         } else {
@@ -89,6 +106,16 @@ public class Main {
         }
     }
 
+    /// Report an error while reading or executing any kind of instruction
+    /// @param line The line where the error occurred
+    /// @param where The location of the error
+    /// @param message The error message
+    private static void report(int line, String where, String message) {
+        System.err.println("[line " + line + "] Error" + where + ": " + message);
+    }
+
+    /// Report a runtime error
+    /// @param error The runtime error that occurred
     static void runtimeError(RuntimeError error) {
         System.err.println(error.getMessage() +
                 "\n[line " + error.token.line + "]");

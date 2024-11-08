@@ -1,8 +1,8 @@
-package dev.cesarc.tinj;
+package dev.cesarc.tinj.syntax.log;
 
-import dev.cesarc.tinj.syntax.Expr;
+import dev.cesarc.tinj.syntax.nodes.Expr;
 
-public class AstPrinter implements Expr.Visitor<String> {
+public class ExprPrinter implements Expr.Visitor<String> {
     String print(Expr expr) {
         return expr.accept(this);
     }

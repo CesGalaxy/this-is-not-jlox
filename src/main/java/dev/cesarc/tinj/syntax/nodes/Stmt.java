@@ -1,4 +1,4 @@
-package dev.cesarc.tinj.syntax;
+package dev.cesarc.tinj.syntax.nodes;
 
 import dev.cesarc.tinj.token.Token;
 

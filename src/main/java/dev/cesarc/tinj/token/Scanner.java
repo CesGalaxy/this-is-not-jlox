@@ -10,6 +10,7 @@ import java.util.Map;
 import static dev.cesarc.tinj.token.TokenType.*;
 
 public class Scanner {
+    /// All the keyword reserved by the language
     private static final Map<String, TokenType> keywords;
 
     static {
@@ -49,6 +50,7 @@ public class Scanner {
         this.source = source;
     }
 
+    /// Scans the source code and returns the tokens found
     public List<Token> scanTokens() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme
