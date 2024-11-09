@@ -3,6 +3,7 @@ package dev.cesarc.tinj.lang;
 import dev.cesarc.tinj.Interpreter;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a class in the language.
@@ -16,12 +17,28 @@ public class LangClass implements LangCallable {
     final String name;
 
     /**
+     * The methods of the class.
+     */
+    private final Map<String, LangFunction> methods;
+
+    /**
      * Constructs a LangClass with the given name.
      *
      * @param name The name of the class.
+     * @param methods The methods of the class.
      */
-    public LangClass(String name) {
+    public LangClass(String name, Map<String, LangFunction> methods) {
         this.name = name;
+        this.methods = methods;
+    }
+
+    LangFunction findMethod(String name) {
+        // TODO: Can this be a single line?
+        if (methods.containsKey(name)) {
+            return methods.get(name);
+        }
+
+        return null;
     }
 
     /**

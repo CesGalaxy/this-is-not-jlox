@@ -3,6 +3,7 @@ package dev.cesarc.tinj;
 import dev.cesarc.tinj.lang.LangCallable;
 import dev.cesarc.tinj.lang.LangClass;
 import dev.cesarc.tinj.lang.LangFunction;
+import dev.cesarc.tinj.lang.LangInstance;
 import dev.cesarc.tinj.syntax.nodes.Expr;
 import dev.cesarc.tinj.syntax.nodes.Stmt;
 import dev.cesarc.tinj.token.Token;
@@ -132,6 +133,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitGetExpr(Expr.Get expr) {
+        Object object = evaluate(expr.object);
+        if (object instanceof LangInstance instance) {
+            return instance.get(expr.name);
+        }
+
+        throw new RuntimeError(expr.name,
+                "Only instances have properties.");
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.expression);
     }
@@ -152,6 +164,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         return evaluate(expr.right);
+    }
+
+    @Override
+    public Object visitSetExpr(Expr.Set expr) {
+        Object object = evaluate(expr.object);
+
+        if (object instanceof LangInstance instance) {
+            Object value = evaluate(expr.value);
+            instance.set(expr.name, value);
+            return value;
+        } else {
+            throw new RuntimeError(expr.name, "Only instances have fields.");
+        }
     }
 
     @Override
@@ -270,7 +295,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         environment.define(stmt.name.lexeme, null);
-        LangClass klass = new LangClass(stmt.name.lexeme);
+
+        Map<String, LangFunction> methods = new HashMap<>();
+        for (Stmt.Function method : stmt.methods) {
+            LangFunction function = new LangFunction(method, environment);
+            methods.put(method.name.lexeme, function);
+        }
+
+        LangClass klass = new LangClass(stmt.name.lexeme, methods);
+
         environment.assign(stmt.name, klass);
         return null;
     }

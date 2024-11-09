@@ -14,6 +14,23 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+/**
+ * The Main class is the entry point for the Tinj interpreter. It reads the source code
+ * from a file or the REPL, scans the code into tokens, parses the tokens into statements,
+ * and then interprets the statements.
+ * <p>
+ * The Main class also provides methods for reporting errors in the source code and
+ * runtime errors that occur during interpretation.
+ *
+ * @see Scanner
+ * @see Parser
+ * @see Resolver
+ * @see Interpreter
+ *
+ * @since Always
+ * @version Current
+ * @author NoSoyCésar
+ */
 public class Main {
     /// The interpreter instance
     private static final Interpreter interpreter = new Interpreter();
