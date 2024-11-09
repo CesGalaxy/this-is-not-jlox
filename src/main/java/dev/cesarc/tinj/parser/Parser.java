@@ -348,6 +348,8 @@ public class Parser {
             return new Expr.Literal(previous().literal);
         }
 
+        if (match(THIS)) return new Expr.This(previous());
+
         if (match(PAREN_OPEN)) {
             Expr expr = expression();
             consume(PAREN_CLOSE, "Expect ')' after expression.");

@@ -60,7 +60,15 @@ public class LangClass implements LangCallable {
      */
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
+        // Create a new empty instance of the class
         LangInstance instance = new LangInstance(this);
+
+        // Find the initializer method and call it (if it's defined) with the given arguments and the new instance bound
+        LangFunction initializer = findMethod("init");
+        if (initializer != null) {
+            initializer.bind(instance).call(interpreter, arguments);
+        }
+
         return instance;
     }
 

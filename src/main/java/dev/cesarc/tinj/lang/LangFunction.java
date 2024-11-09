@@ -20,6 +20,12 @@ public class LangFunction implements LangCallable {
         this.declaration = declaration;
     }
 
+    LangFunction bind(LangInstance instance) {
+        Environment environment = new Environment(closure);
+        environment.define("this", instance);
+        return new LangFunction(declaration, environment);
+    }
+
     /// Get the number of parameters the function requires
     @Override
     public int arity() {

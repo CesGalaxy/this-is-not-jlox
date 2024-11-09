@@ -13,6 +13,9 @@ import java.util.Stack;
  * The Resolver class is responsible for resolving variable declarations and scopes
  * within the given statements and expressions. It implements the Visitor pattern
  * for both expressions and statements.
+ *
+ * @see Expr
+ * @see Stmt
  */
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     /**
@@ -27,6 +30,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private final Stack<Map<String, Boolean>> scopes = new Stack<>();
 
     private FunctionType currentFunction = FunctionType.NONE;
+    private ClassType currentClass = ClassType.NONE;
 
     /**
      * Constructs a Resolver with the given interpreter.
@@ -37,10 +41,26 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         this.interpreter = interpreter;
     }
 
+    /**
+     * What type of function is being resolved (if any).
+     */
     private enum FunctionType {
+        /// Not a function
         NONE,
+        /// A normal function
         FUNCTION,
+        /// A method (inside a class)
         METHOD,
+    }
+
+    /**
+     * What type of class is being resolved (if any).
+     */
+    private enum ClassType {
+        /// Not inside a class
+        NONE,
+        /// Inside a class
+        CLASS
     }
 
     /**
@@ -60,14 +80,27 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
+        // Now we're working inside a class
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+
+        // Declare the variable containing the currently creating class in the current scope
         declare(stmt.name);
 
+        // Create a new scope for the class, which includes the class itself (this) as a variable
+        beginScope();
+        scopes.peek().put("this", true);
+
+        // For each method in the class, resolve the function of type METHOD
         for (Stmt.Function method : stmt.methods) {
             FunctionType declaration = FunctionType.METHOD;
             resolveFunction(method, declaration);
         }
 
+        // End the class scope, define the variable containing the class and restore the enclosing class
+        endScope();
         define(stmt.name);
+        currentClass = enclosingClass;
         return null;
     }
 
@@ -210,6 +243,24 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitSetExpr(Expr.Set expr) {
         resolve(expr.value);
         resolve(expr.object);
+        return null;
+    }
+
+    /**
+     * Visits a 'this' expression, ensuring it is used within a class and resolving
+     * the expression locally.
+     *
+     * @param expr The 'this' expression
+     * @return null
+     */
+    @Override
+    public Void visitThisExpr(Expr.This expr) {
+        if (currentClass == ClassType.NONE) {
+            Main.error(expr.keyword, "Can't use 'this' outside of a class.");
+            return null;
+        }
+
+        resolveLocal(expr, expr.keyword);
         return null;
     }
 

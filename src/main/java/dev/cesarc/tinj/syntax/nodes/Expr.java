@@ -21,6 +21,7 @@ public abstract class Expr {
         R visitLiteralExpr(Literal expr);
         R visitLogicalExpr(Logical expr);
         R visitSetExpr(Set expr);
+        R visitThisExpr(This expr);
         R visitUnaryExpr(Unary expr);
         R visitVariableExpr(Variable expr);
     }
@@ -157,6 +158,22 @@ public abstract class Expr {
         public final Expr object;
         public final Token name;
         public final Expr value;
+    }
+
+    public static class This extends Expr {
+        public This(Token keyword) {
+            this.keyword = keyword;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitThisExpr(this);
+        }
+
+        /**
+         * The 'this' keyword token.
+         */
+        public final Token keyword;
     }
 
     /// Unary operator (negation or logical negation)

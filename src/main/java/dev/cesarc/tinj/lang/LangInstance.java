@@ -35,7 +35,7 @@ public class LangInstance {
         }
 
         LangFunction method = langClass.findMethod(name.lexeme);
-        if (method != null) return method; //.bind(this);
+        if (method != null) return method.bind(this);
 
         throw new RuntimeError(name, "Undefined property '" + name.lexeme + "'.");
     }

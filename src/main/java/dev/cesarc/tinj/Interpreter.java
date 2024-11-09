@@ -15,7 +15,11 @@ import java.util.Map;
 
 import static dev.cesarc.tinj.token.TokenType.OR;
 
-/// The VM for the language, it interprets the AST and executes its instructions
+/**
+ * The VM for the language, it interprets the AST and executes its instructions
+ *
+ * @see dev.cesarc.tinj.syntax.nodes.Expr
+ */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     /// The global environment for the interpreter, it's constant
     public final Environment globals = new Environment();
@@ -31,7 +35,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         globals.define("now", System.currentTimeMillis() / 1000.0);
         globals.define("clock", new LangCallable() {
             @Override
-            public int arity() { return 0; }
+            public int arity() {
+                return 0;
+            }
 
             /// Get the current time in seconds
             @Override
@@ -42,12 +48,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             // Function.prototype.constants.nativeFnIdentifier = "<native fn>"
 
             @Override
-            public String toString() { return "<native fn>"; }
+            public String toString() {
+                return "<native fn>";
+            }
         });
     }
 
-    /// Run a set of statements
-    /// @param statements The statements to run
+    /**
+     * Execute a list of statements
+     *
+     * @param statements The statements to execute
+     */
     void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
@@ -66,11 +77,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return switch (expr.operator.type) {
             case PLUS -> {
                 if (left instanceof Double && right instanceof Double) {
-                    yield (double)left + (double)right;
+                    yield (double) left + (double) right;
                 }
 
                 if (left instanceof String && right instanceof String) {
-                    yield (String)left + (String)right;
+                    yield (String) left + (String) right;
                 }
 
                 throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
@@ -180,17 +191,22 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitThisExpr(Expr.This expr) {
+        return lookUpVariable(expr.keyword, expr);
+    }
+
+    @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object right = evaluate(expr.right);
 
         switch (expr.operator.type) {
             case DASH:
                 if (right instanceof Double)
-                    return -(double)right;
+                    return -(double) right;
                 if (right instanceof String)
-                    return new StringBuilder((String)right).reverse().toString();
+                    return new StringBuilder((String) right).reverse().toString();
                 if (right instanceof Boolean)
-                    return !((boolean)right);
+                    return !((boolean) right);
 
                 throw new RuntimeError(expr.operator, "Invalid operand type for unary -");
             case BANG:
@@ -226,10 +242,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private boolean isTruthy(Object object) {
         if (object == null) return false;
-        if (object instanceof Boolean) return (boolean)object;
+        if (object instanceof Boolean) return (boolean) object;
         return true;
     }
 
+    /**
+     * Check if two objects are equal
+     *
+     * @param a The first object
+     * @param b The second object
+     * @return Whether the objects are equal
+     */
     private boolean isEqual(Object a, Object b) {
         if (a == null && b == null) return true;
         if (a == null) return false;
@@ -237,6 +260,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return a.equals(b);
     }
 
+    /**
+     * Convert data of any type to a string
+     *
+     * @param object The object to convert
+     * @return The string representation of the object
+     */
     private String stringify(Object object) {
         if (object == null) return "nil";
 
@@ -249,10 +278,21 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return object.toString();
     }
 
+    /**
+     * Evaluate an expression and return the result of the evaluation
+     *
+     * @param expr The expression to evaluate
+     * @return The result of the evaluation
+     */
     private Object evaluate(Expr expr) {
         return expr.accept(this);
     }
 
+    /**
+     * Execute a statement
+     *
+     * @param stmt The statement to execute
+     */
     private void execute(Stmt stmt) {
         stmt.accept(this);
     }
