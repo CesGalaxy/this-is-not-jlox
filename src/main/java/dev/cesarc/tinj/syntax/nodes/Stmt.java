@@ -5,15 +5,34 @@ import dev.cesarc.tinj.token.Token;
 import java.util.List;
 
 public abstract class Stmt {
+    /// A method for visiting each type of statement
     public interface Visitor<R> {
-        R visitExpressionStmt(Expression stmt);
-        R visitFunctionStmt(Function stmt);
-        R visitIfStmt(If stmt);
-        R visitPrintStmt(Print stmt);
-        R visitReturnStmt(Return stmt);
-        R visitVarStmt(Var stmt);
-        R visitWhileStmt(While stmt);
+        /// Visit a block statement
         R visitBlockStmt(Block stmt);
+
+        /// Visit a class statement
+        R visitClassStmt(Class stmt);
+
+        /// Visit an expression statement
+        R visitExpressionStmt(Expression stmt);
+
+        /// Visit a function statement
+        R visitFunctionStmt(Function stmt);
+
+        /// Visit an if statement
+        R visitIfStmt(If stmt);
+
+        /// Visit a print statement
+        R visitPrintStmt(Print stmt);
+
+        /// Visit a return statement
+        R visitReturnStmt(Return stmt);
+
+        /// Visit a variable declaration statement
+        R visitVarStmt(Var stmt);
+
+        /// Visit a while statement
+        R visitWhileStmt(While stmt);
     }
 
     public static class Block extends Stmt {
@@ -27,6 +46,42 @@ public abstract class Stmt {
         }
 
         public final List<Stmt> statements;
+    }
+
+    /// A statement defining a new class
+    public static class Class extends Stmt {
+        /**
+         * Create a new class statement with the provided name, superclass, and methods
+         * @param name The name of the class
+         * @param methods The methods of the class
+         */
+        public Class(Token name, List<Stmt.Function> methods) {
+            this.name = name;
+            //this.superclass = superclass;
+            this.methods = methods;
+        }
+
+        /// Make the provided visitor visit this statement
+        ///
+        /// @param visitor The visitor to visit this statement
+        /// @return The result of visiting this statement
+        /// @see Stmt.Visitor
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitClassStmt(this);
+        }
+
+        /**
+         * The name of the class
+         */
+        public final Token name;
+
+        //public final Expr.Variable superclass;
+
+        /**
+         * The methods of the class
+         */
+        public final List<Stmt.Function> methods;
     }
 
     public static class Expression extends Stmt {

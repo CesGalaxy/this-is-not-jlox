@@ -8,6 +8,7 @@ import java.util.Map;
 /// A virtual space for storing variables
 public class Environment {
     /// The parent environment, if any
+    ///
     /// @see Environment#Environment(Environment)
     final Environment enclosing;
 
@@ -20,6 +21,7 @@ public class Environment {
     }
 
     /// Create a new environment with the provided parent
+    ///
     /// @param enclosing The parent environment
     /// @see Environment#enclosing
     public Environment(Environment enclosing) {
@@ -27,6 +29,7 @@ public class Environment {
     }
 
     /// Get the value of a variable in this environment (or parent)
+    ///
     /// @param name The name of the variable
     /// @return The value of the variable
     /// @throws RuntimeError If the variable does not exist
@@ -42,7 +45,8 @@ public class Environment {
     }
 
     /// Assign a value to an existing variable in this environment (or parent)
-    /// @param name The name of the variable
+    ///
+    /// @param name  The name of the variable
     /// @param value The value to assign to the variable
     /// @throws RuntimeError If the variable does not exist
     void assign(Token name, Object value) throws RuntimeError {
@@ -65,5 +69,41 @@ public class Environment {
     /// Define a new variable in this environment
     public void define(String name, Object value) {
         values.put(name, value);
+    }
+
+    /// Get the variable at the ancestor environment at the given distance
+    ///
+    /// @param distance The distance to the ancestor
+    /// @param name     The name of the variable
+    /// @return The value of the variable
+    /// @see Environment#ancestor(int)
+    /// @see Environment#values
+    Object getAt(int distance, String name) {
+        return ancestor(distance).values.get(name);
+    }
+
+    /// Assign a value to an existing variable in the ancestor environment at the given distance
+    ///
+    /// @param distance The distance to the ancestor
+    /// @return The value of the variable
+    Environment ancestor(int distance) {
+        Environment environment = this;
+        for (int i = 0; i < distance; i++) {
+            assert environment != null;
+            environment = environment.enclosing;
+        }
+
+        return environment;
+    }
+
+    /// Assign a value to an existing variable in the ancestor environment at the given distance
+    ///
+    /// @param distance The distance to the ancestor
+    /// @param name     The name of the variable
+    /// @param value    The value to assign to the variable
+    /// @see Environment#ancestor(int)
+    /// @see Environment#values
+    public void assignAt(Integer distance, Token name, Object value) {
+        ancestor(distance).values.put(name.lexeme, value);
     }
 }

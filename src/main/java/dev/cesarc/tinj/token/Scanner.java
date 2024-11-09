@@ -62,6 +62,7 @@ public class Scanner {
         return tokens;
     }
 
+    /// Tries to scan the next token in the source code
     private void scanToken() {
         char c = advance();
         switch (c) {

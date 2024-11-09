@@ -38,6 +38,7 @@ public class Main {
     }
 
     /// Execute the contents of the file at the provided path
+    ///
     /// @param path The path to the file to run
     /// @throws IOException If the file could not be read
     private static void runFile(String path) throws IOException {
@@ -53,6 +54,7 @@ public class Main {
     }
 
     /// Start listening to prompts from the user and run them in the REPL
+    ///
     /// @throws IOException If there was an error reading the input
     private static void runPrompt() throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
@@ -71,6 +73,7 @@ public class Main {
     }
 
     /// Run the provided source code
+    ///
     /// @param source The source code to run
     private static void run(String source) {
         // Scan the code and get the tokens from it
@@ -84,19 +87,27 @@ public class Main {
         // Stop if there was a syntax error.
         if (hadError) return;
 
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+
+        // Stop if there was a resolution error.
+        if (hadError) return;
+
         // Run the code in the current session interpreter
         interpreter.interpret(statements);
     }
 
     /// Report an error in the source code
-    /// @param line The line where the error occurred
+    ///
+    /// @param line    The line where the error occurred
     /// @param message The error message
     public static void error(int line, String message) {
         report(line, "", message);
     }
 
     /// Report an error in the scanned tokens
-    /// @param token The token where the error occurred
+    ///
+    /// @param token   The token where the error occurred
     /// @param message The error message
     public static void error(Token token, String message) {
         if (token.type == TokenType.EOF) {
@@ -107,14 +118,16 @@ public class Main {
     }
 
     /// Report an error while reading or executing any kind of instruction
-    /// @param line The line where the error occurred
-    /// @param where The location of the error
+    ///
+    /// @param line    The line where the error occurred
+    /// @param where   The location of the error
     /// @param message The error message
     private static void report(int line, String where, String message) {
         System.err.println("[line " + line + "] Error" + where + ": " + message);
     }
 
     /// Report a runtime error
+    ///
     /// @param error The runtime error that occurred
     static void runtimeError(RuntimeError error) {
         System.err.println(error.getMessage() +

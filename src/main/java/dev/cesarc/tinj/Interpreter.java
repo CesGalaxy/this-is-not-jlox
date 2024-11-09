@@ -1,22 +1,29 @@
 package dev.cesarc.tinj;
 
 import dev.cesarc.tinj.lang.LangCallable;
+import dev.cesarc.tinj.lang.LangClass;
 import dev.cesarc.tinj.lang.LangFunction;
 import dev.cesarc.tinj.syntax.nodes.Expr;
 import dev.cesarc.tinj.syntax.nodes.Stmt;
 import dev.cesarc.tinj.token.Token;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static dev.cesarc.tinj.token.TokenType.OR;
 
+/// The VM for the language, it interprets the AST and executes its instructions
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     /// The global environment for the interpreter, it's constant
     public final Environment globals = new Environment();
 
     /// The environment currently being used
     private Environment environment = globals;
+
+    /// The local variables in the current scope
+    private final Map<Expr, Integer> locals = new HashMap<>();
 
     /// Create a new interpreter and define the native functions
     Interpreter() {
@@ -170,7 +177,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return environment.get(expr.name);
+        return lookUpVariable(expr.name, expr);
+    }
+
+    private Object lookUpVariable(Token name, Expr expr) {
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            return environment.getAt(distance, name.lexeme);
+        } else {
+            return globals.get(name);
+        }
     }
 
     private void checkNumberOperand(Token operator, Object operand) {
@@ -216,6 +232,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         stmt.accept(this);
     }
 
+    void resolve(Expr expr, int depth) {
+        locals.put(expr, depth);
+    }
+
     public void executeStmt(Stmt statement, Environment environment) {
         Environment previous = this.environment;
 
@@ -244,6 +264,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        environment.define(stmt.name.lexeme, null);
+        LangClass klass = new LangClass(stmt.name.lexeme);
+        environment.assign(stmt.name, klass);
         return null;
     }
 
@@ -307,7 +335,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
+
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            environment.assignAt(distance, expr.name, value);
+        } else {
+            globals.assign(expr.name, value);
+        }
+
         return value;
     }
 }

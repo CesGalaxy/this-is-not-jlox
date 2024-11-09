@@ -22,14 +22,24 @@ public class Parser {
     /// A cursor pointing to the index (at the token list) of current token being parsed
     private int current = 0;
 
-    /// Initialize the parser with a list of tokens
+    /**
+     * Create a new parser with the provided list of tokens
+     * @param tokens The tokens to parse
+     * @see dev.cesarc.tinj.token.Token
+     */
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    /// Parse the list of tokens into a list of statements
+    /**
+     * Parse the list of tokens into a list of statements
+     * @return The list of statements
+     */
     public List<Stmt> parse() {
+        // Create a list to store the parsed statements
         List<Stmt> statements = new ArrayList<>();
+
+        // Parse the tokens into statements until the end of the token list
         while (!isAtEnd()) {
             statements.add(declaration());
         }
@@ -49,6 +59,7 @@ public class Parser {
     }
 
     private Stmt statement() {
+        if (match(CLASS)) return classDeclaration();
         if (match(FUN)) return function("function");
         if (match(FOR)) return forStatement();
         if (match(IF)) return ifStatement();
@@ -58,6 +69,20 @@ public class Parser {
         if (match(BRACE_OPEN)) return new Stmt.Block(block());
 
         return expressionStatement();
+    }
+
+    private Stmt classDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect class name.");
+        consume(BRACE_OPEN, "Expect '{' before class body.");
+
+        List<Stmt.Function> methods = new ArrayList<>();
+        while (!check(BRACE_CLOSE) && !isAtEnd()) {
+            methods.add(function("method"));
+        }
+
+        consume(BRACE_CLOSE, "Expect '}' after class body.");
+
+        return new Stmt.Class(name, methods);
     }
 
     private Stmt forStatement() {
