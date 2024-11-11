@@ -32,13 +32,19 @@ public class LangClass implements LangCallable {
         this.methods = methods;
     }
 
+    /**
+     * Finds a method with the given name in the class.
+     *
+     * @param name The name of the method to find.
+     * @return The method with the given name, or null if it doesn't exist.
+     */
     LangFunction findMethod(String name) {
-        // TODO: Can this be a single line?
-        if (methods.containsKey(name)) {
-            return methods.get(name);
-        }
-
+        if (methods.containsKey(name) && !name.equals(this.name)) return methods.get(name);
         return null;
+    }
+
+    LangFunction getInitializer() {
+        return findMethod(name);
     }
 
     /**
@@ -64,7 +70,8 @@ public class LangClass implements LangCallable {
         LangInstance instance = new LangInstance(this);
 
         // Find the initializer method and call it (if it's defined) with the given arguments and the new instance bound
-        LangFunction initializer = findMethod("init");
+        // The constructor is named as the class itself
+        LangFunction initializer = getInitializer();
         if (initializer != null) {
             initializer.bind(instance).call(interpreter, arguments);
         }
@@ -79,6 +86,8 @@ public class LangClass implements LangCallable {
      */
     @Override
     public int arity() {
-        return 0;
+        LangFunction initializer = getInitializer();
+        if (initializer == null) return 0;
+        return initializer.arity();
     }
 }

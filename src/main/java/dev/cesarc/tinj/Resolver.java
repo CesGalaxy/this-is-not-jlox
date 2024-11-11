@@ -78,6 +78,14 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         return null;
     }
 
+    /**
+     * Visits a class statement, declaring the class, defining the class, and then
+     * resolving the class. During each function in the class (method) resolution,
+     * a 'this' variable is declared and defined in the scope.
+     *
+     * @param stmt The class statement to visit.
+     * @return null
+     */
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         // Now we're working inside a class
